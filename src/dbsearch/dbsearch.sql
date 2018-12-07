@@ -94,15 +94,16 @@ AS
 
   FUNCTION load_tables(
     p_owner_pattern       IN VARCHAR2,
-    p_table_pattern       IN VARCHAR2
+    p_table_pattern       IN VARCHAR2,
+    p_regexp_mode         IN VARCHAR2
   ) RETURN tab_tables IS
     l_tables tab_tables;
   BEGIN
     SELECT *
     BULK COLLECT INTO l_tables
     FROM ALL_TABLES
-    WHERE regexp_like(OWNER, p_owner_pattern, 'i')
-      AND regexp_like(TABLE_NAME, p_table_pattern, 'i')
+    WHERE regexp_like(OWNER, p_owner_pattern, p_regexp_mode)
+      AND regexp_like(TABLE_NAME, p_table_pattern, p_regexp_mode)
     ORDER BY TABLE_NAME;
 
     RETURN l_tables;
@@ -112,7 +113,8 @@ AS
     p_owner               IN VARCHAR2,
     p_table_name          IN VARCHAR2,
     p_column_pattern      IN VARCHAR2,
-    p_column_type_pattern IN VARCHAR2
+    p_column_type_pattern IN VARCHAR2,
+    p_regexp_mode         IN VARCHAR2
   ) RETURN tab_columns IS
     l_columns tab_columns;
   BEGIN
@@ -121,8 +123,8 @@ AS
     FROM ALL_TAB_COLS
     WHERE OWNER = p_owner
       AND TABLE_NAME = p_table_name
-      AND regexp_like(COLUMN_NAME, p_column_pattern, 'i')
-      AND regexp_like(DATA_TYPE, p_column_type_pattern, 'i')
+      AND regexp_like(COLUMN_NAME, p_column_pattern, p_regexp_mode)
+      AND regexp_like(DATA_TYPE, p_column_type_pattern, p_regexp_mode)
     ORDER BY COLUMN_ID;
 
     RETURN l_columns;
@@ -224,7 +226,7 @@ AS
     check_and_raise((p_column_pattern IS NULL), 'The column pattern cannot be null or empty!');
     check_and_raise((p_column_type_pattern IS NULL), 'The pattern for column types cannot be null or empty!');
 
-    l_tables := load_tables(p_owner_pattern, p_table_pattern);
+    l_tables := load_tables(p_owner_pattern, p_table_pattern, p_regex_mode);
 
     FOR i IN 1..l_tables.COUNT LOOP
 
@@ -232,7 +234,8 @@ AS
         l_tables(i).owner,
         l_tables(i).table_name,
         p_column_pattern,
-        p_column_type_pattern
+        p_column_type_pattern,
+        p_regex_mode
       );
 
       IF l_cols.COUNT = 0 THEN
