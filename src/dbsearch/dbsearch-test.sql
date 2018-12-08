@@ -7,7 +7,7 @@ FROM TABLE(DBSEARCH.FIND(
 ));
 
 /***
-  Date columns are converted according to the sessions nls_character_format.
+  Date columns are converted according to the sessions NLS_DATE_FORMAT.
   To use a different format, alter your session for that.
 ***/
 ALTER SESSION SET NLS_DATE_FORMAT = 'yymmdd';
